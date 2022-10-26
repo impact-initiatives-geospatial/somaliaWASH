@@ -29,12 +29,37 @@ Following the markdown first approach you would write the functions directly in 
 
 ```{r}
 
+#' load_h2r_data
+#'
+#' @return
+#' @export
+#' @description function to load H2R data set - will use environment key to specify base data directory
+#' @examples
 load_h2r_data <-  function(){
   
 }
 
+#' select_h2r_indicators
+#'
+#' @return
+#' @export
+#' @description function to select relevant h2r indicators from data set
+#' @examples
 select_h2r_indicators <- function(){
   
+}
+
+
+#' load_h2r_indictors
+#'
+#' @return
+#' @export
+#' @description combination of `load_h2r_data` and `select_h2r_indicators` to quicky load only data with only relelvant indicators
+#' @examples
+load_h2r_indictors <-  function(){
+  df <-load_h2r_data()
+  df |> 
+    select_h2r_indicators()
 }
 
 ```
