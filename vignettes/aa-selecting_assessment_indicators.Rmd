@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(here)
 library(tidyverse)
-library(somaliaWASH)
+# library(somaliaWASH)
 ```
 
 ## Intro
@@ -36,8 +36,14 @@ Following the markdown first approach you would write the functions directly in 
 #' @description function to load H2R data set - will use environment key to specify base data directory
 #' @examples
 load_h2r_data <-  function(){
-  data_path <-  Sys.getenv("SOM_2203_WASH_DATA")
-  h2r_data <- readr::read_csv(file.path(data_path, "data/202209/raw/REACH_H2R_0522-2607_data2.csv"))
+  
+  main_folder_path <-  Sys.getenv("SOM_2203_WASH_DATA")
+  data_path <- "data/202209/raw/REACH_H2R_0522-2607_data2.csv"
+  
+  h2r_data <- readr::read_csv(file.path(main_folder_path, data_path)) |> 
+    mutate(latitude = parse_number(X),
+           longitude = parse_number(geometry))
+  
   return(h2r_data)
 }
 
@@ -47,8 +53,22 @@ load_h2r_data <-  function(){
 #' @export
 #' @description function to select relevant h2r indicators from data set
 #' @examples
-select_h2r_indicators <- function(){
+select_h2r_indicators <- function(input_df, country_code="som"){
+  if(country_code=="som"){
+    h2r_cols <- list(
+      `Flood` = "climatic_shock.flood",
+      `Failed rains` = "climatic_shock.no_rain",
+      `Drought` = "climatic_shock.drought",
+      `Locust invation` = "climatic_shock.locusts",
+      `Wild fires` = "climatic_shock.fires",
+      `Latitude` = "latitude",
+      `Longitude` = "longitude"
+    )  
+  }
   
+  df_h2r_cols <- input_df |> 
+    select(purrr::map_chr(h2r_cols, ~.x))
+  return(df_h2r_cols)
 }
 
 
@@ -60,8 +80,10 @@ select_h2r_indicators <- function(){
 #' @examples
 load_h2r_indicators <-  function(){
   df <-load_h2r_data()
+  
   df |> 
-    select_h2r_indicators()
+    select_h2r_indicators(country_code="som")
+    
 }
 
 ```
