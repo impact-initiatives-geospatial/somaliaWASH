@@ -36,7 +36,9 @@ Following the markdown first approach you would write the functions directly in 
 #' @description function to load H2R data set - will use environment key to specify base data directory
 #' @examples
 load_h2r_data <-  function(){
-  
+  data_path <-  Sys.getenv("SOM_2203_WASH_DATA")
+  h2r_data <- readr::read_csv(file.path(data_path, "data/202209/raw/REACH_H2R_0522-2607_data2.csv"))
+  return(h2r_data)
 }
 
 #' select_h2r_indicators
