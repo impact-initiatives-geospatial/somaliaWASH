@@ -1,5 +1,5 @@
 #' select_h2r_indicators
-#' This function is for selecting appropriate indicators for a given country. You need to supply the country code like "som" for Somalia
+#' This function is for selecting appropriate indicators for a given country. You need to supply data frame and the country code like "som" for Somalia
 #' @return
 #' @export
 #' @description function to select relevant h2r indicators from data set
@@ -18,6 +18,6 @@ select_h2r_indicators <- function(input_df, country_code="som"){
   }
 
   df_h2r_cols <- input_df |>
-    select(purrr::map_chr(h2r_cols, ~.x))
+    select(any_of(purrr::map_chr(h2r_cols, ~.x)))
   return(df_h2r_cols)
 }
