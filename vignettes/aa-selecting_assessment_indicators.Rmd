@@ -1,0 +1,46 @@
+---
+title: "aa-selecting_assessment_indicators"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{aa-selecting_assessment_indicators}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(here)
+library(tidyverse)
+library(somaliaWASH)
+```
+
+## Intro
+Suggest following a [markdown first](https://rtask.thinkr.fr/when-development-starts-with-documentation/) approach to this analysis.
+
+## Loading and selecting data
+
+Following the markdown first approach you would write the functions directly in the markdown chunk below and then demonstrate how they work in the subsequent chunk. Once you are confident they are working as desired. Copy the functions to new files in the `R/` folder and remove this chunk leaving only the example demonstration here:
+
+```{r}
+
+load_h2r_data <-  function(){
+  
+}
+
+select_h2r_indicators <- function(){
+  
+}
+
+```
+
+
+```{r}
+
+
+```
