@@ -5,7 +5,7 @@
 #' @description function to select relevant h2r indicators from data set
 #' @examples
 select_h2r_indicators <- function(input_df, country_code="som"){
-  if(country_code=="som"){
+  if(country_code =="som"){
     h2r_cols <- list(
       `Flood` = "climatic_shock.flood",
       `Failed rains` = "climatic_shock.no_rain",
@@ -19,6 +19,6 @@ select_h2r_indicators <- function(input_df, country_code="som"){
 
   df_h2r_cols <- input_df |>
     select(any_of(purrr::map_chr(h2r_cols, ~.x))) |>
-    mutate(country_code="som")
+    mutate(country_code = country_code)
   return(df_h2r_cols)
 }
