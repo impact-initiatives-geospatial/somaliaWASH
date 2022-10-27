@@ -18,6 +18,7 @@ select_h2r_indicators <- function(input_df, country_code="som"){
   }
 
   df_h2r_cols <- input_df |>
-    select(any_of(purrr::map_chr(h2r_cols, ~.x)))
+    select(any_of(purrr::map_chr(h2r_cols, ~.x))) |>
+    mutate(country_code="som")
   return(df_h2r_cols)
 }
