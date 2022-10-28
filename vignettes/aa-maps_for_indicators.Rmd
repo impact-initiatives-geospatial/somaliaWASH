@@ -10,7 +10,9 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  warning = F, 
+  message = F
 )
 ```
 
@@ -19,7 +21,6 @@ library(here)
 library(tidyverse)
 # library(somaliaWASH)
 theme_set(theme_bw())
-library("sf")
 ```
 
 ## Intro
@@ -199,7 +200,10 @@ analysis_cols_shocks <- c("Flood",
                              "Crop loss reasons no irrigation",
                              "Crop loss reasons high temperature")
 
-purrr::map(analysis_cols_shocks, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+maps_shocks <- purrr::map(analysis_cols_shocks, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+
+cowplot::plot_grid(plotlist = maps_shocks)
+
 ```
 ### Looking into Displacement indicators
 
@@ -221,7 +225,8 @@ analysis_cols_displacement <- c("Reason moved",
                                 "New IDP arrivals reason eviction",
                                 "New IDP arrivals reason insecurity")
 
-purrr::map(analysis_cols_displacement, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+maps_displacement <- purrr::map(analysis_cols_displacement, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+cowplot::plot_grid(plotlist = maps_displacement)
 ```
 
 ### Looking into Displacement indicators
@@ -251,7 +256,9 @@ analysis_cols_displacement <- c("Reason moved",
                                 "IDP pull factors services",
                                 "HC push main")
 
-purrr::map(analysis_cols_displacement, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+maps_displacement <- purrr::map(analysis_cols_displacement, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+cowplot::plot_grid(plotlist = )
+
 ```
 
 ### Looking into WASH indicators
@@ -280,7 +287,8 @@ analysis_cols_wash <- c("Main source water",
                                 "Waste disposal",
                                 "Hand washing access")
 
-purrr::map(analysis_cols_wash, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+maps_wash <- purrr::map(analysis_cols_wash, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+cowplot::plot_grid(plotlist = maps_wash)
 ```
 
 
