@@ -188,7 +188,7 @@ wp_n_grid_utm <- swp_sf |>
     hex_aggregate_pt_count(hex = som_hex)
 
 # aggregate point counts based on `var`- `val` combination
-strategic_water_point_count_per_grid <- swp_sf |>
+swp_n_grid_utm <- swp_sf |>
     hex_aggregate_pt_count(hex = som_hex,var = "is_strategic",var_val = "yes")
 
 ```
