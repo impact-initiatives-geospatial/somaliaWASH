@@ -21,7 +21,7 @@ ds_find <-  function(proj="somWASH",ds="2205_h2r_settlement"){
   ds_path <-switch(
     ds,
     "2205_h2r_settlement" = "data\\202209\\h2r_aggregated\\SOM1901_H2R_settlement_aggregation_May_2022.csv" ,
-    "strategic_wp" = "data\\202209\\raw\\SWALIM water point\\SOM_Strategic_water_sources_Sept2020_v3.csv"  )
+    "strategic_wp" = "data\\202209\\raw\\SWALIM water point\\SOM_Strategic_water_sources_Sept2020_v3.xlsx"  )
   }
   return(file.path(root_dir,ds_path))
 }
