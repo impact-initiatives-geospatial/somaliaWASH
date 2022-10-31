@@ -26,12 +26,7 @@ library(sf)
 library(tmap)
 ```
 
-## Intro
-Suggest following a [markdown first](https://rtask.thinkr.fr/when-development-starts-with-documentation/) approach to this analysis.
-
-## Loading and selecting data
-
-Following the markdown first approach you would write the functions directly in the markdown chunk below and then demonstrate how they work in the subsequent chunk. Once you are confident they are working as desired. Copy the functions to new files in the `R/` folder and remove this chunk leaving only the example demonstration here:
+## Maps for SOM WASH Indicators
 
 ```{r,echo=FALSE}
 
@@ -169,21 +164,6 @@ map_with_tmap <- function(input_shepefile, input_points, input_col) {
     tm_symbols(col = input_col, size = 0.3, palette = "Accent", border.lwd = 0.1)+
     tm_compass(type = "4star", size = 2, position = c("left", "top"))+
     tm_scale_bar(position = c("right", "bottom"))
-}
-
-map_with_ggplot <- function(input_shepefile, input_points, input_col) {
-  ggplot()+
-  geom_sf(data = input_shepefile, 
-               fill = "lightgray",
-               colour = "white") + 
-  geom_point(data = input_points, aes(x=Longitude, y =Latitude, colour = input_col), size = 1.5) +
-  geom_jitter() +
-  labs(x = " ", y = " ", subtitle = paste("Map of SOM showing", input_col))+
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
-        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
-        axis.line = element_blank())
 }
 ```
 
