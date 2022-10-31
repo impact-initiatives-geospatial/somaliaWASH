@@ -7,8 +7,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
+  echo=FALSE,
   collapse = TRUE,
   comment = "#>",
   warning = F, 
@@ -16,11 +17,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, include=FALSE}
+```{r, echo=FALSE}
 library(here)
 library(tidyverse)
 # library(somaliaWASH)
 theme_set(theme_bw())
+library(sf)
+library(tmap)
 ```
 
 ## Intro
@@ -30,7 +33,7 @@ Suggest following a [markdown first](https://rtask.thinkr.fr/when-development-st
 
 Following the markdown first approach you would write the functions directly in the markdown chunk below and then demonstrate how they work in the subsequent chunk. Once you are confident they are working as desired. Copy the functions to new files in the `R/` folder and remove this chunk leaving only the example demonstration here:
 
-```{r,echo=TRUE}
+```{r,echo=FALSE}
 
 #' load_h2r_data
 #'
@@ -141,9 +144,9 @@ select_h2r_indicators <- function(input_df, country_code="som"){
 load_h2r_indicators <-  function(ctry_code = "som"){
   df <-load_h2r_data()
   
-  df |> 
+  df_processed <-  df |> 
     select_h2r_indicators(country_code = ctry_code)
-    
+  return(df_processed)  
 }
 
 
@@ -161,18 +164,31 @@ map_with_tmap <- function(input_shepefile, input_points, input_col) {
   tm_shape(input_shepefile) +
     tm_polygons() +
     tm_layout(paste("Map of SOM showing", input_col), title.size=.8)+
+    tm_borders("white", lwd = .1) +
     tm_shape(input_points)+
-    tm_symbols(col = input_col, size = 0.5, palette = "Accent")+
+    tm_symbols(col = input_col, size = 0.3, palette = "Accent", border.lwd = 0.1)+
     tm_compass(type = "4star", size = 2, position = c("left", "top"))+
     tm_scale_bar(position = c("right", "bottom"))
+}
+
+map_with_ggplot <- function(input_shepefile, input_points, input_col) {
+  ggplot()+
+  geom_sf(data = input_shepefile, 
+               fill = "lightgray",
+               colour = "white") + 
+  geom_point(data = input_points, aes(x=Longitude, y =Latitude, colour = input_col), size = 1.5) +
+  geom_jitter() +
+  labs(x = " ", y = " ", subtitle = paste("Map of SOM showing", input_col))+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.line = element_blank())
 }
 ```
 
 
-```{r,echo=FALSE}
-theme_set(theme_bw())
-library(sf)
-library(tmap)
+```{r, echo=FALSE}
 
 df_som_data <- load_h2r_indicators(ctry_code = "som")
 
@@ -186,52 +202,28 @@ df_som_data_shape <- spData::world |>
 
 ### Looking into Shocks and reasons for crop loss
 
-```{r,echo=FALSE}
+```{r, echo=FALSE, out.width="100%"}
 # datapasta::vector_paste_vertical()
 analysis_cols_shocks <- c("Flood",
-                             "Failed rains",
-                             "Drought",
-                             "Locust invation",
-                             "Wild fires",
-                             "Crop loss reasons",
-                             "Crop loss reasons locusts",
-                             "Crop loss reasons no rain",
-                             "Crop loss reasons flooding",
-                             "Crop loss reasons no irrigation",
-                             "Crop loss reasons high temperature")
+                          "Failed rains",
+                          "Drought",
+                          "Locust invation",
+                          "Wild fires",
+                          "Crop loss reasons",
+                          "Crop loss reasons locusts",
+                          "Crop loss reasons no rain",
+                          "Crop loss reasons flooding",
+                          "Crop loss reasons no irrigation",
+                          "Crop loss reasons high temperature")
 
-maps_shocks <- purrr::map(analysis_cols_shocks, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+purrr::map(analysis_cols_shocks, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
 
-cowplot::plot_grid(plotlist = maps_shocks)
 
-```
-### Looking into Displacement indicators
-
-```{r,echo=FALSE}
-# datapasta::vector_paste_vertical()
-analysis_cols_displacement <- c("Reason moved",
-                                "Reason moved to access water",
-                                "Reason moved to access food",
-                                "Reason moved to better security",
-                                "Reason moved to jobsa vailable",
-                                "Reason moved to shelters available",
-                                "Reason moved to better services",
-                                "New IDP arrivals",
-                                "New IDP arrivals reason climatic shock",
-                                "New IDP arrivals reason lack food",
-                                "New IDP arrivals reason lack water",
-                                "New IDP arrivals reason lack income",
-                                "New IDP arrivals reason no services",
-                                "New IDP arrivals reason eviction",
-                                "New IDP arrivals reason insecurity")
-
-maps_displacement <- purrr::map(analysis_cols_displacement, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
-cowplot::plot_grid(plotlist = maps_displacement)
 ```
 
 ### Looking into Displacement indicators
 
-```{r,echo=FALSE}
+```{r, echo=FALSE, out.width="100%"}
 # datapasta::vector_paste_vertical()
 analysis_cols_displacement <- c("Reason moved",
                                 "Reason moved to access water",
@@ -256,39 +248,38 @@ analysis_cols_displacement <- c("Reason moved",
                                 "IDP pull factors services",
                                 "HC push main")
 
-maps_displacement <- purrr::map(analysis_cols_displacement, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
-cowplot::plot_grid(plotlist = )
+purrr::map(analysis_cols_displacement, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
 
 ```
 
 ### Looking into WASH indicators
 
-```{r,echo=FALSE}
+```{r,echo=FALSE, out.width="100%"}
 # datapasta::vector_paste_vertical()
 analysis_cols_wash <- c("Main source water",
-                                "Responsible water fetching",
-                                "Surfacewater drinking",
-                                "Gettingwater time",
-                                "Water sufficient lastmonth",
-                                "Stagnant water near",
-                                "People using latrines",
-                                "Barriers usetoilets no barrier",
-                                "Barriers usetoilets not available",
-                                "Barriers usetoilets insufficient",
-                                "Barriers usetoilets not funtional",
-                                "Barriers usetoilets overcrowded",
-                                "Barriers usetoilets too dirty",
-                                "Barriers usetoilets too far",
-                                "Barriers usetoilets not common",
-                                "Barriers usetoilets women notsafe",
-                                "Barriers usetoilets pwd notsafe",
-                                "Barriers usetoilets child notsafe",
-                                "Barriers usetoilets night notsafe",
-                                "Waste disposal",
-                                "Hand washing access")
+                        "Responsible water fetching",
+                        "Surfacewater drinking",
+                        "Gettingwater time",
+                        "Water sufficient lastmonth",
+                        "Stagnant water near",
+                        "People using latrines",
+                        "Barriers usetoilets no barrier",
+                        "Barriers usetoilets not available",
+                        "Barriers usetoilets insufficient",
+                        "Barriers usetoilets not funtional",
+                        "Barriers usetoilets overcrowded",
+                        "Barriers usetoilets too dirty",
+                        "Barriers usetoilets too far",
+                        "Barriers usetoilets not common",
+                        "Barriers usetoilets women notsafe",
+                        "Barriers usetoilets pwd notsafe",
+                        "Barriers usetoilets child notsafe",
+                        "Barriers usetoilets night notsafe",
+                        "Waste disposal",
+                        "Hand washing access")
 
-maps_wash <- purrr::map(analysis_cols_wash, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
-cowplot::plot_grid(plotlist = maps_wash)
+purrr::map(analysis_cols_wash, ~map_with_tmap(df_som_data_shape, df_som_data_sf, .x))
+
 ```
 
 
