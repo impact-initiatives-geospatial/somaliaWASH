@@ -164,3 +164,13 @@ use shortened easy to remember names to access file paths:
 ds_find(ds = "2205_h2r_settlement")
 
 ```
+
+
+this can be wrapped in various load functions like `load_swp()` which loads the Strageic Water Point data.
+`TODO:` not priority, but later we can refactor code to just have one `load_*()` function which loads correct data based on argument
+```{r}
+
+swp <-  load_swp()
+```
+
+```
