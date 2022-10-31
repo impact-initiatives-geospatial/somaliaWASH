@@ -16,14 +16,3 @@ load_swp <-  function(){
     janitor::clean_names()
 }
 
-swp <-  load_swp()
-
-hex_aggregate_pt <-  function(pt_sf= swp,hex=som_hex, var=NULL, var_val=NULL){
-
-
-  hex_utm <- hex |>
-    reach_reproject_utm("som")
-
-
-
-}
