@@ -144,13 +144,8 @@ map_with_ggplot <- function(input_shepefile, input_col) {
 
 df_som_data <- load_h2r_indicators(ctry_code = "som")
 
-# df_som_data_sf <- df_som_data |> 
-#   st_as_sf(coords = c("Longitude","Latitude"), crs = 4326)
-
 df_som_data_shape <- som_hex |> 
   left_join(df_som_data, by = c("GRID_ID" = "hex_4000km"))
-
-data_pth_water <- file.path(Sys.getenv("SOM_2203_WASH_DATA"), "data/202209/raw/SWALIM water point/SOM_Strategic_water_sources_Sept2020_v3.xlsx")
 
 df_water_points_shape <- load_swp() |> 
   st_as_sf(coords = c("longitude","latitude"), crs = 4326)
@@ -161,26 +156,17 @@ df_water_points_shape <- load_swp() |>
 
 ```{r, echo=FALSE, fig.height=10, fig.width=10}
 
-pal <- colorBin(
-  palette = "YlOrBr",
-  domain = df_som_data_shape$mainsource_water_borehole,
-  bins = 5,
-  na.color = "#b6b6b7"
-)
+pal <- colorBin(palette = "YlOrBr", domain = df_som_data_shape$mainsource_water_borehole, bins = 5, na.color = "#b6b6b7")
 points_pal <- colourvalues::color_values_rgb(df_water_points_shape$water_source_type, include_alpha = FALSE)/255
 
 df_som_data_polygons <- sf::st_cast(x = df_som_data_shape,to = 'POLYGON')
 
 leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
+  addProviderTiles(providers$Esri.WorldGrayCanvas, options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
                    group="Esri Gray Canvas") |> 
-  addProviderTiles(providers$HERE.satelliteDay, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
+  addProviderTiles(providers$HERE.satelliteDay,  options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
                    group="Here SatelliteDay") |> 
-  # addPolygons( data = df_som_data_shape,
-  addProviderTiles(providers$Esri.WorldImagery, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
+  addProviderTiles(providers$Esri.WorldImagery,  options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
                    group="Esri World Imagery") |> 
   leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_borehole), group = "main_water_sources") |> 
   leafgl::addGlPoints(data = df_water_points_shape, radius = 8, fillColor = points_pal, group = "water_source_type") |>
