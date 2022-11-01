@@ -144,16 +144,31 @@ map_with_ggplot <- function(input_shepefile, input_col) {
 
 df_som_data <- load_h2r_indicators(ctry_code = "som")
 
+
+
+
 # df_som_data_sf <- df_som_data |> 
 #   st_as_sf(coords = c("Longitude","Latitude"), crs = 4326)
 
 df_som_data_shape <- som_hex |> 
   left_join(df_som_data, by = c("GRID_ID" = "hex_4000km"))
 
+
+
 data_pth_water <- file.path(Sys.getenv("SOM_2203_WASH_DATA"), "data/202209/raw/SWALIM water point/SOM_Strategic_water_sources_Sept2020_v3.xlsx")
 
 df_water_points_shape <- load_swp() |> 
   st_as_sf(coords = c("longitude","latitude"), crs = 4326)
+
+
+
+# I want to clip the point file to just H2R areas mainly so that we can use the {leaflet} label functionality which doesn't work in {leafgl}
+h2r_bbox <- som_hex |> 
+  filter(GRID_ID %in% df_som_data$hex_4000km) |> 
+  st_bbox() |> 
+  st_as_sfc()
+
+swp_in_h2r_bbox<-df_water_points_shape[h2r_bbox,]
 
 ```
 
@@ -168,6 +183,9 @@ pal <- colorBin(
   na.color = "#b6b6b7"
 )
 points_pal <- colourvalues::color_values_rgb(df_water_points_shape$water_source_type, include_alpha = FALSE)/255
+dark_pal <-RColorBrewer::brewer.pal(n=6, name = "Dark2")
+
+points_facpal <- colorFactor(palette = dark_pal, domain = df_water_points_shape$water_source_type)
 
 df_som_data_polygons <- sf::st_cast(x = df_som_data_shape,to = 'POLYGON')
 
@@ -178,15 +196,22 @@ leaflet() %>%
   addProviderTiles(providers$HERE.satelliteDay, 
                    options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
                    group="Here SatelliteDay") |> 
-  # addPolygons( data = df_som_data_shape,
   addProviderTiles(providers$Esri.WorldImagery, 
                    options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
                    group="Esri World Imagery") |> 
   leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_borehole), group = "main_water_sources") |> 
-  leafgl::addGlPoints(data = df_water_points_shape, radius = 8, fillColor = points_pal, group = "water_source_type") |>
-  addLegend(position ="bottomright",
-            labels = unique(df_water_points_shape$water_source_type),
-            colors = apply(unique(points_pal), 1, function(x) rgb(x[1], x[2], x[3])),
+  
+  #annoyingly {leafgl} label doesn't work so let's use leaflet -- this is why i clipped the point file
+  addCircleMarkers(data = swp_in_h2r_bbox,
+                   fillColor = ~points_facpal(water_source_type),
+                   color= NA,
+                   fillOpacity = 1,
+                   group = "water_source_type",
+                   label = ~water_source_type) |>
+  addLegend(position ="bottomright",pal = points_facpal,
+            
+            values =swp_in_h2r_bbox$water_source_type, 
+            # values = unique(swp_in_h2r_bbox$water_source_type),
             title = "Water Sources Types",
             opacity  = 1,
             na.label = ""
