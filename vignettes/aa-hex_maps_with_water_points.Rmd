@@ -1,0 +1,170 @@
+---
+title: "aa-maps_for_indicators"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{aa-maps_for_indicators}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo=FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  warning = F, 
+  message = F
+)
+```
+
+```{r, echo=FALSE}
+library(here)
+library(tidyverse)
+devtools::load_all()
+theme_set(theme_bw())
+library(sf)
+library(tmap)
+```
+
+## Hex Maps for SOM WASH Indicators
+
+```{r,echo=FALSE}
+
+#' load_h2r_data
+#'
+#' @return
+#' @export
+#' @description function to load H2R data set - will use environment key to specify base data directory
+#' @examples
+load_h2r_data <-  function(main_folder_path, data_path){
+  
+  main_folder_path <-  Sys.getenv("SOM_2203_WASH_DATA")
+  data_path <- "data/202209/h2r_aggregated/SOM1901_H2R_hex_400km_May_2022.csv"
+  
+  h2r_data <- readr::read_csv(file.path(main_folder_path, data_path))# |> 
+    # mutate(latitude = parse_number(X),
+    #        longitude = parse_number(geometry))
+  
+  return(h2r_data)
+}
+
+#' select_h2r_indicators
+#'
+#' @return
+#' @export
+#' @description function to select relevant h2r indicators from data set
+#' @examples
+select_h2r_indicators <- function(input_df, country_code="som"){
+  if(country_code =="som"){
+    
+    h2r_cols <- c("hex_4000km",
+                  "climatic_shock",
+                  "crop_loss_reasons",
+                  "primary_reason_moved",
+                  "idp_new_arrivals",
+                  "idp_arrived_reason",
+                  "idp_pull_factors",
+                  "hc_push_main",
+                  "mainsource_water",
+                  "responsible_water_fetching",
+                  "surfacewater_drinking",
+                  "gettingwater_time",
+                  "water_sufficient_lastmonth",
+                  "stagnant_water_near",
+                  "people_using_latrines",
+                  "barriers_usetoilets",
+                  "waste_disposal",
+                  "handwashing_access"
+      )
+
+  }
+
+  df_h2r_cols <- input_df |>
+    # select(any_of(purrr::map_chr(h2r_cols, ~.x))) |>
+    select(contains(h2r_cols)) |>
+    mutate(country_code = country_code)
+  return(df_h2r_cols)
+}
+
+
+#' load_h2r_indictors
+#'
+#' @return
+#' @export
+#' @description combination of `load_h2r_data` and `select_h2r_indicators` to quicky load only data with only relelvant indicators
+#' @examples
+load_h2r_indicators <-  function(ctry_code = "som"){
+  df <-load_h2r_data(main_folder_path = Sys.getenv("SOM_2203_WASH_DATA"), 
+                     data_path = "data/202209/h2r_aggregated/SOM1901_H2R_hex_400km_May_2022.csv")
+  
+  df_processed <-  df |> 
+    select_h2r_indicators(country_code = ctry_code)
+  return(df_processed)  
+}
+
+
+#' map_with_tmap
+#' Function to iterate over given columns and produce maps based on those columns
+#' @param input_shepefile 
+#' @param input_points 
+#' @param input_col 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+hex_map_with_tmap <- function(input_shepefile, input_col) {
+  
+  tm_shape(input_shepefile) +
+    tm_polygons(col = input_col, border.col = "white") +
+    tm_layout(paste("Hex Map of SOM showing", input_col), title.size=.8)+
+    tm_borders("white", lwd = .1) +
+    tm_compass(type = "4star", size = 2, position = c("left", "top"))+
+    tm_scale_bar(position = c("right", "bottom"))
+}
+
+map_with_ggplot <- function(input_shepefile, input_col) {
+  ggplot()+
+    geom_sf(data = input_shepefile, aes(fill = .data[[input_col]]),  colour = "white") + 
+    scale_fill_distiller(palette = "YlOrBr", direction = 1, na.value = "grey80") +
+    labs(x = " ", y = " ", subtitle = paste("Map of SOM showing", input_col))+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+          axis.line = element_blank(),
+          legend.position="none")
+}
+
+```
+
+
+```{r, echo=FALSE}
+
+df_som_data <- load_h2r_indicators(ctry_code = "som")
+
+# df_som_data_sf <- df_som_data |> 
+#   st_as_sf(coords = c("Longitude","Latitude"), crs = 4326)
+
+df_som_data_shape <- som_hex |> 
+  left_join(df_som_data, by = c("GRID_ID" = "hex_4000km"))
+
+data_pth_water <- file.path(Sys.getenv("SOM_2203_WASH_DATA"), "data/202209/raw/SWALIM water point/SOM_Strategic_water_sources_Sept2020_v3.xlsx")
+
+df_water_points <- readxl::read_excel(path = data_pth_water, sheet = "Water_sources") |> 
+  janitor::clean_names()
+
+df_water_points_shape <- df_water_points |> 
+  st_as_sf(coords = c("longitude","latitude"), crs = 4326)
+
+```
+
+### Looking into Shocks and reasons for crop loss
+
+```{r, echo=FALSE}
+
+
+```
+
+
+
