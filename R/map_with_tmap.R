@@ -13,7 +13,7 @@ map_with_tmap <- function(input_shepefile, input_col, input_ctry_code) {
   if (input_col %in% colnames(input_shepefile)){
     tmap::tm_shape(input_shepefile) +
       tmap::tm_polygons(col = input_col, border.col = "white") +
-      tmap::tm_layout(paste("Map of",input_ctry_code,  "showing", input_col), title.size=.8)+
+      tmap::tm_layout(paste("Map of",stringr::str_to_upper(input_ctry_code),  "showing", input_col), title.size=.8)+
       tmap::tm_borders("white", lwd = .1) +
       tmap::tm_compass(type = "4star", size = 2, position = c("left", "top"))+
       tmap::tm_scale_bar(position = c("right", "bottom"))
