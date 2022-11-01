@@ -134,7 +134,7 @@ swp_in_h2r_bbox_functional <- swp_in_h2r_bbox |>
 
 ### H2R with strategic water data
 
-```{r, echo=FALSE, fig.height=10, fig.width=10}
+```{r, echo=FALSE, fig.height=8, fig.width=10}
 
 pal <- colorBin(palette = "YlOrBr", domain = df_som_data_shape$mainsource_water_borehole, bins = 5, na.color = "#b6b6b7")
 
@@ -155,7 +155,7 @@ leaflet() %>%
                    group="Here SatelliteDay") |> 
   addProviderTiles(providers$Esri.WorldImagery,  options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
                    group="Esri World Imagery") |> 
-  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_borehole), group = "main_water_sources") |> 
+  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_borehole), group = "mainsource_water_borehole") |> 
   
   #annoyingly {leafgl} label doesn't work so let's use leaflet -- this is why i clipped the point file
   addCircleMarkers(data = swp_in_h2r_bbox_functional,
@@ -174,7 +174,7 @@ leaflet() %>%
   ) |> 
   addLayersControl(
     baseGroups = c("Esri Gray Canvas", "Here SatelliteDay", "Esri World Imagery"),
-    overlayGroups = c("main_water_sources", "water_source_type"),
+    overlayGroups = c("mainsource_water_borehole", "water_source_type"),
     options = layersControlOptions(collapsed = FALSE)
   )
 
@@ -193,7 +193,7 @@ leaflet() %>%
   addProviderTiles(providers$Esri.WorldImagery, 
                    options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
                    group="Esri World Imagery") |> 
-  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_well_unprotected), group = "main_water_sources") |> 
+  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_well_unprotected), group = "mainsource_water_well_unprotected") |> 
   
   #annoyingly {leafgl} label doesn't work so let's use leaflet -- this is why i clipped the point file
   addCircleMarkers(data = swp_in_h2r_bbox,
@@ -212,7 +212,7 @@ leaflet() %>%
   ) |> 
   addLayersControl(
     baseGroups = c("Esri Gray Canvas", "Here SatelliteDay", "Esri World Imagery"),
-    overlayGroups = c("main_water_sources", "water_source_type"),
+    overlayGroups = c("mainsource_water_well_unprotected", "water_source_type"),
     options = layersControlOptions(collapsed = FALSE)
   )
 
