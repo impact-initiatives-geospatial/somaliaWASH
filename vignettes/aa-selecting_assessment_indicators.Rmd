@@ -164,3 +164,56 @@ use shortened easy to remember names to access file paths:
 ds_find(ds = "2205_h2r_settlement")
 
 ```
+
+
+this can be wrapped in various load functions like `load_swp()` which loads the Strageic Water Point data.
+`TODO:` not priority, but later we can refactor code to just have one `load_*()` function which loads correct data based on argument
+```{r}
+
+swp <-  load_swp()
+```
+
+
+
+# simple point aggregations to grid
+
+
+```{r}
+
+swp_sf <- swp |>
+     sf::st_as_sf(coords=c("longitude","latitude"), crs=4326)
+
+ # just aggregate point counts
+wp_n_grid_utm <- swp_sf |>
+    hex_aggregate_pt_count(hex = som_hex)
+
+# aggregate point counts based on `var`- `val` combination
+swp_n_grid_utm <- swp_sf |>
+    hex_aggregate_pt_count(hex = som_hex,var = "is_strategic",var_val = "yes")
+
+```
+
+let's just map for fun
+```{r}
+library(leaflet)
+library(leafgl) # for faster rendering large polygon datasets
+
+# for leaflet - convert back to wgs84
+
+wp_n_grid <- wp_n_grid_utm |> 
+  sf::st_transform(crs= 4326) |> 
+  sf::st_cast("POLYGON") # just leafgl can't handle multipolygons
+
+leaflet() |> 
+  addTiles() |> 
+  leafgl::addGlPolygons(data = wp_n_grid,
+                        fillColor = ~count,
+                        popup =~count) 
+  
+
+
+
+```
+
+
+```

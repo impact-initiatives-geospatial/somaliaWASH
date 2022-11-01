@@ -12,6 +12,7 @@
 
 load_swp <-  function(){
   readxl:::read_xlsx( path = ds_find(proj = "somWASH", ds = "strategic_wp"),
-                      sheet = "Water_sources")
+                      sheet = "Water_sources") |>
+    janitor::clean_names()
 }
 

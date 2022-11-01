@@ -108,3 +108,69 @@ h2r_hex_aggregate_pct <-  function(df,
 
 
 }
+
+
+
+
+
+
+
+
+
+#' Title
+#'
+#' @param pt_sf sf class point object
+#' @param hex hex/grid/polygon
+#' @param var variable of interest (default=NULL) . If NULL, just point counts of entire dataset are aggregated
+#' @param var_val variable value of interest (default = NULL). If NULL, just point counts of entire dataset are aggregated
+#' @param country_code three chr country code (default = "som")
+#'
+#' @return
+#' @export
+#'
+#' @examples \dontrun{
+#' library(somaliaWASH)
+#' swp <-  load_swp()
+#' swp_sf <- swp |>
+#'     sf::st_as_sf(coords=c("longitude","latitude"), crs=4326)
+#'
+#' # just aggregate point counts
+#' water_point_count_per_grid <- swp_sf |>
+#'    hex_aggregate_pt_count(hex = som_hex)
+#'
+#' # aggregate point counts based on `var`- `val` combination
+#' strategic_water_point_count_per_grid <- swp_sf |>
+#'    hex_aggregate_pt_count(hex = som_hex,var = "is_strategic",var_val = "yes")
+#'}
+
+
+hex_aggregate_pt_count <-  function(pt_sf= swp_sf,hex=som_hex, var=NULL, var_val=NULL, country_code="som"){
+
+  var_and_val_cond<- ((is.null(var) & is.null(var_val))| (!is.null(var)&!is.null(var_val)))
+  assertthat::assert_that(var_and_val_cond,msg = "if either var or var_value is NULL, they both most be NULL & visa versa")
+
+  if(!is.null(var)){
+    pt_sf <- pt_sf |>
+      dplyr::filter(!!sym(var)==var_val)
+  }
+
+  pt_sf_utm <- pt_sf |>
+    reach_reproject_utm(country_code = country_code)
+
+  hex_utm <- hex |>
+    reach_reproject_utm(country_code = country_code)
+
+  grid_counts <- pt_sf_utm |>
+    sf::st_join(hex_utm) |>
+    sf::st_drop_geometry() |>
+    group_by(GRID_ID) |>
+    summarise(
+      count=n()
+    )
+  res<- hex_utm |>
+    left_join(grid_counts, by ="GRID_ID")
+  return(res)
+
+
+
+}
