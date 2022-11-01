@@ -151,10 +151,7 @@ df_som_data_shape <- som_hex |>
 
 data_pth_water <- file.path(Sys.getenv("SOM_2203_WASH_DATA"), "data/202209/raw/SWALIM water point/SOM_Strategic_water_sources_Sept2020_v3.xlsx")
 
-df_water_points <- readxl::read_excel(path = data_pth_water, sheet = "Water_sources") |> 
-  janitor::clean_names()
-
-df_water_points_shape <- df_water_points |> 
+df_water_points_shape <- load_swp() |> 
   st_as_sf(coords = c("longitude","latitude"), crs = 4326)
 
 ```
