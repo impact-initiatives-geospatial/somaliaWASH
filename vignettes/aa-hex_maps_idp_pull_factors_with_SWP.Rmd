@@ -135,74 +135,66 @@ df_som_data_polygons <- sf::st_cast(x = df_som_data_shape,to = 'POLYGON')[h2r_bb
 
 ```
 
-### H2R mainsource_water_borehole with strategic water data
+### H2R idp_pull_factors_access_water_yes with strategic water data
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
 map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
-                              polygon_lyr_column = "mainsource_water_borehole",
+                              polygon_lyr_column = "idp_pull_factors_access_water_yes",
                               input_point_layer = swp_in_h2r_bbox_functional,
                               point_lyr_column = "water_source_type")
 
 ```
 
-### H2R mainsource_water_well_unprotected with strategic water data
+### H2R idp_pull_factors_access_food_yes with strategic water data
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
 map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
-                              polygon_lyr_column = "mainsource_water_well_unprotected",
+                              polygon_lyr_column = "idp_pull_factors_access_food_yes",
                               input_point_layer = swp_in_h2r_bbox_functional,
                               point_lyr_column = "water_source_type")
 
 ```
 
-### H2R mainsource_water_kiosk with strategic water data
+### H2R idp_pull_factors_better_security_yes with strategic water data
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
 map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
-                              polygon_lyr_column = "mainsource_water_kiosk",
+                              polygon_lyr_column = "idp_pull_factors_better_security_yes",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
+
+```
+
+### H2R idp_pull_factors_presence_jobs_yes with strategic water data
+
+```{r, echo=FALSE, fig.height=8, fig.width=10}
+
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "idp_pull_factors_presence_jobs_yes",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
+
+```
+
+### H2R idp_pull_factors_availability_shelters_yes with strategic water data
+
+```{r, echo=FALSE, fig.height=8, fig.width=10}
+
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "idp_pull_factors_availability_shelters_yes",
                               input_point_layer = swp_in_h2r_bbox_functional,
                               point_lyr_column = "water_source_type")
 ```
 
-### H2R mainsource_water_publictap with strategic water data
+### H2R idp_pull_factors_better_services_yes with strategic water data
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
 map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
-                              polygon_lyr_column = "mainsource_water_publictap",
-                              input_point_layer = swp_in_h2r_bbox_functional,
-                              point_lyr_column = "water_source_type")
-```
-
-### H2R mainsource_water_spring_unprotected with strategic water data
-
-```{r, echo=FALSE, fig.height=8, fig.width=10}
-
-map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
-                              polygon_lyr_column = "mainsource_water_spring_unprotected",
-                              input_point_layer = swp_in_h2r_bbox_functional,
-                              point_lyr_column = "water_source_type")
-```
-
-### H2R mainsource_water_rainwater with strategic water data
-
-```{r, echo=FALSE, fig.height=8, fig.width=10}
-
-map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
-                              polygon_lyr_column = "mainsource_water_rainwater",
-                              input_point_layer = swp_in_h2r_bbox_functional,
-                              point_lyr_column = "water_source_type")
-```
-
-### H2R mainsource_water_surface with strategic water data
-
-```{r, echo=FALSE, fig.height=8, fig.width=10}
-
-map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
-                              polygon_lyr_column = "mainsource_water_surface",
+                              polygon_lyr_column = "idp_pull_factors_better_services_yes",
                               input_point_layer = swp_in_h2r_bbox_functional,
                               point_lyr_column = "water_source_type")
 ```
