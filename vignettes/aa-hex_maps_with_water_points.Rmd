@@ -39,8 +39,8 @@ library(leaflet)
 #' @examples
 load_h2r_data <-  function(main_folder_path, data_path){
   
-  main_folder_path <-  Sys.getenv("SOM_2203_WASH_DATA")
-  data_path <- "data/202209/h2r_aggregated/SOM1901_H2R_hex_400km_May_2022.csv"
+  # main_folder_path <-  Sys.getenv("SOM_2203_WASH_DATA")
+  # data_path <- "data/202209/h2r_aggregated/SOM1901_H2R_hex_400km_May_2022.csv"
   
   h2r_data <- readr::read_csv(file.path(main_folder_path, data_path))# |> 
     # mutate(latitude = parse_number(X),
@@ -130,54 +130,19 @@ swp_in_h2r_bbox_functional <- swp_in_h2r_bbox |>
     functioning= tolower(functioning)
   ) |> 
   filter(functioning=="yes")
+
+df_som_data_polygons <- sf::st_cast(x = df_som_data_shape,to = 'POLYGON')[h2r_bbox,]
+
 ```
 
 ### H2R mainsource_water_borehole with strategic water data
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
-pal <- colorBin(palette = "YlOrBr", domain = df_som_data_shape$mainsource_water_borehole, bins = 5, na.color = "#b6b6b7")
-
-points_pal <- colourvalues::color_values_rgb(df_water_points_shape$water_source_type, include_alpha = FALSE)/255
-dark_pal <-RColorBrewer::brewer.pal(n=6, name = "Dark2")
-
-points_facpal <- colorFactor(palette = dark_pal, domain = df_water_points_shape$water_source_type)
-
-df_som_data_polygons <- sf::st_cast(x = df_som_data_shape,to = 'POLYGON')
-
-###########################################################################3
-# Reported borehole as main source
-##############################################################################
-leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas, options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri Gray Canvas") |> 
-  addProviderTiles(providers$HERE.satelliteDay,  options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Here SatelliteDay") |> 
-  addProviderTiles(providers$Esri.WorldImagery,  options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri World Imagery") |> 
-  setView(lng = 43.825611, lat= 2.766313, zoom = 8) %>%
-  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_borehole), group = "mainsource_water_borehole") |> 
-  
-  #annoyingly {leafgl} label doesn't work so let's use leaflet -- this is why i clipped the point file
-  addCircleMarkers(data = swp_in_h2r_bbox_functional,
-                   fillColor = ~points_facpal(water_source_type),
-                   color= NA,
-                   fillOpacity = 0.8,
-                   group = "water_source_type",
-                   label = ~water_source_type) |>
-  addLegend(position ="bottomright",pal = points_facpal,
-            
-            values =swp_in_h2r_bbox_functional$water_source_type, 
-            # values = unique(swp_in_h2r_bbox$water_source_type),
-            title = "Water Sources Types",
-            opacity  = 0.8,
-            na.label = ""
-  ) |> 
-  addLayersControl(
-    baseGroups = c("Esri Gray Canvas", "Here SatelliteDay", "Esri World Imagery"),
-    overlayGroups = c("mainsource_water_borehole", "water_source_type"),
-    options = layersControlOptions(collapsed = FALSE)
-  )
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "mainsource_water_borehole",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
 
 ```
 
@@ -185,175 +150,59 @@ leaflet() %>%
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
-###########################################################################3
-# Reported water_well_unprotected as main source
-##############################################################################
-leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri Gray Canvas") |> 
-  addProviderTiles(providers$HERE.satelliteDay, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Here SatelliteDay") |> 
-  addProviderTiles(providers$Esri.WorldImagery, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri World Imagery") |>
-  setView(lng = 43.825611, lat= 2.766313, zoom = 8) %>%
-  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_well_unprotected), group = "mainsource_water_well_unprotected") |> 
-  
-  #annoyingly {leafgl} label doesn't work so let's use leaflet -- this is why i clipped the point file
-  addCircleMarkers(data = swp_in_h2r_bbox,
-                   fillColor = ~points_facpal(water_source_type),
-                   color= NA,
-                   fillOpacity = 0.8,
-                   group = "water_source_type",
-                   label = ~water_source_type) |>
-  addLegend(position ="bottomright",pal = points_facpal,
-            
-            values =swp_in_h2r_bbox$water_source_type, 
-            # values = unique(swp_in_h2r_bbox$water_source_type),
-            title = "Water Sources Types",
-            opacity  = 0.8,
-            na.label = ""
-  ) |> 
-  addLayersControl(
-    baseGroups = c("Esri Gray Canvas", "Here SatelliteDay", "Esri World Imagery"),
-    overlayGroups = c("mainsource_water_well_unprotected", "water_source_type"),
-    options = layersControlOptions(collapsed = FALSE)
-  )
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "mainsource_water_well_unprotected",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
 
 ```
-
-
-
 
 ### H2R mainsource_water_kiosk with strategic water data
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
-###########################################################################3
-# Reported mainsource_water_kiosk as main source
-##############################################################################
-leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri Gray Canvas") |> 
-  addProviderTiles(providers$HERE.satelliteDay, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Here SatelliteDay") |> 
-  addProviderTiles(providers$Esri.WorldImagery, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri World Imagery") |>
-  setView(lng = 43.825611, lat= 2.766313, zoom = 8) %>%
-  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_kiosk), group = "mainsource_water_kiosk") |> 
-  
-  #annoyingly {leafgl} label doesn't work so let's use leaflet -- this is why i clipped the point file
-  addCircleMarkers(data = swp_in_h2r_bbox,
-                   fillColor = ~points_facpal(water_source_type),
-                   color= NA,
-                   fillOpacity = 0.8,
-                   group = "water_source_type",
-                   label = ~water_source_type) |>
-  addLegend(position ="bottomright",pal = points_facpal,
-            
-            values =swp_in_h2r_bbox$water_source_type, 
-            # values = unique(swp_in_h2r_bbox$water_source_type),
-            title = "Water Sources Types",
-            opacity  = 0.8,
-            na.label = ""
-  ) |> 
-  addLayersControl(
-    baseGroups = c("Esri Gray Canvas", "Here SatelliteDay", "Esri World Imagery"),
-    overlayGroups = c("mainsource_water_kiosk", "water_source_type"),
-    options = layersControlOptions(collapsed = FALSE)
-  )
-
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "mainsource_water_kiosk",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
 ```
 
 ### H2R mainsource_water_publictap with strategic water data
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
-###########################################################################3
-# Reported mainsource_water_publictap as main source
-##############################################################################
-leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri Gray Canvas") |> 
-  addProviderTiles(providers$HERE.satelliteDay, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Here SatelliteDay") |> 
-  addProviderTiles(providers$Esri.WorldImagery, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri World Imagery") |>
-  setView(lng = 43.825611, lat= 2.766313, zoom = 8) %>%
-  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_publictap), group = "mainsource_water_publictap") |> 
-  
-  #annoyingly {leafgl} label doesn't work so let's use leaflet -- this is why i clipped the point file
-  addCircleMarkers(data = swp_in_h2r_bbox,
-                   fillColor = ~points_facpal(water_source_type),
-                   color= NA,
-                   fillOpacity = 0.8,
-                   group = "water_source_type",
-                   label = ~water_source_type) |>
-  addLegend(position ="bottomright",pal = points_facpal,
-            
-            values =swp_in_h2r_bbox$water_source_type, 
-            # values = unique(swp_in_h2r_bbox$water_source_type),
-            title = "Water Sources Types",
-            opacity  = 0.8,
-            na.label = ""
-  ) |> 
-  addLayersControl(
-    baseGroups = c("Esri Gray Canvas", "Here SatelliteDay", "Esri World Imagery"),
-    overlayGroups = c("mainsource_water_publictap", "water_source_type"),
-    options = layersControlOptions(collapsed = FALSE)
-  )
-
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "mainsource_water_publictap",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
 ```
 
 ### H2R mainsource_water_spring_unprotected with strategic water data
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
-###########################################################################3
-# Reported mainsource_water_spring_unprotected as main source
-##############################################################################
-leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri Gray Canvas") |> 
-  addProviderTiles(providers$HERE.satelliteDay, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Here SatelliteDay") |> 
-  addProviderTiles(providers$Esri.WorldImagery, 
-                   options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), 
-                   group="Esri World Imagery") |>
-  setView(lng = 43.825611, lat= 2.766313, zoom = 8) %>%
-  leafgl::addGlPolygons(data = df_som_data_polygons, fillColor = ~pal(mainsource_water_spring_unprotected), group = "mainsource_water_spring_unprotected") |> 
-  
-  #annoyingly {leafgl} label doesn't work so let's use leaflet -- this is why i clipped the point file
-  addCircleMarkers(data = swp_in_h2r_bbox,
-                   fillColor = ~points_facpal(water_source_type),
-                   color= NA,
-                   fillOpacity = 0.8,
-                   group = "water_source_type",
-                   label = ~water_source_type) |>
-  addLegend(position ="bottomright",pal = points_facpal,
-            
-            values =swp_in_h2r_bbox$water_source_type, 
-            # values = unique(swp_in_h2r_bbox$water_source_type),
-            title = "Water Sources Types",
-            opacity  = 0.8,
-            na.label = ""
-  ) |> 
-  addLayersControl(
-    baseGroups = c("Esri Gray Canvas", "Here SatelliteDay", "Esri World Imagery"),
-    overlayGroups = c("mainsource_water_spring_unprotected", "water_source_type"),
-    options = layersControlOptions(collapsed = FALSE)
-  )
-
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "mainsource_water_spring_unprotected",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
 ```
 
+### H2R mainsource_water_rainwater with strategic water data
 
+```{r, echo=FALSE, fig.height=8, fig.width=10}
+
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "mainsource_water_rainwater",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
+```
+
+### H2R mainsource_water_surface with strategic water data
+
+```{r, echo=FALSE, fig.height=8, fig.width=10}
+
+map_leaflet_polygon_and_point(input_polygon_layer = df_som_data_polygons,
+                              polygon_lyr_column = "mainsource_water_surface",
+                              input_point_layer = swp_in_h2r_bbox_functional,
+                              point_lyr_column = "water_source_type")
+```
