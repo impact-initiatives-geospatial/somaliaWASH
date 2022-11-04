@@ -1,0 +1,238 @@
+---
+title: "aa-scatter_plots_for_h2r_swp_indicators"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{aa-hex_maps_with_water_points}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo=FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  warning = F, 
+  message = F
+)
+```
+
+```{r, echo=FALSE}
+library(here)
+library(tidyverse)
+devtools::load_all()
+theme_set(theme_bw())
+library(sf)
+library(tmap)
+library(leaflet)
+```
+
+
+```{r,echo=FALSE}
+
+#' load_h2r_data
+#'
+#' @return
+#' @export
+#' @description function to load H2R data set - will use environment key to specify base data directory
+#' @examples
+load_h2r_data <-  function(main_folder_path, data_path){
+  
+  # main_folder_path <-  Sys.getenv("SOM_2203_WASH_DATA")
+  # data_path <- "data/202209/h2r_aggregated/SOM1901_H2R_hex_400km_May_2022.csv"
+  
+  h2r_data <- readr::read_csv(file.path(main_folder_path, data_path))# |> 
+    # mutate(latitude = parse_number(X),
+    #        longitude = parse_number(geometry))
+  
+  return(h2r_data)
+}
+
+#' select_h2r_indicators
+#'
+#' @return
+#' @export
+#' @description function to select relevant h2r indicators from data set
+#' @examples
+select_h2r_indicators <- function(input_df, country_code="som"){
+  if(country_code =="som"){
+    
+    h2r_cols <- c("hex_4000km",
+                  "climatic_shock",
+                  "crop_loss_reasons",
+                  "primary_reason_moved",
+                  "idp_new_arrivals",
+                  "idp_arrived_reason",
+                  "idp_pull_factors",
+                  "hc_push_main",
+                  "mainsource_water",
+                  "responsible_water_fetching",
+                  "surfacewater_drinking",
+                  "gettingwater_time",
+                  "water_sufficient_lastmonth",
+                  "stagnant_water_near",
+                  "people_using_latrines",
+                  "barriers_usetoilets",
+                  "waste_disposal",
+                  "handwashing_access"
+      )
+
+  }
+
+  df_h2r_cols <- input_df |>
+    # select(any_of(purrr::map_chr(h2r_cols, ~.x))) |>
+    select(contains(h2r_cols)) |>
+    mutate(country_code = country_code)
+  return(df_h2r_cols)
+}
+
+
+#' load_h2r_indictors
+#'
+#' @return
+#' @export
+#' @description combination of `load_h2r_data` and `select_h2r_indicators` to quicky load only data with only relelvant indicators
+#' @examples
+load_h2r_indicators <-  function(ctry_code = "som"){
+  df <-load_h2r_data(main_folder_path = Sys.getenv("SOM_2203_WASH_DATA"), 
+                     data_path = "data/202209/h2r_aggregated/SOM1901_H2R_hex_400km_May_2022.csv")
+  
+  df_processed <-  df |> 
+    select_h2r_indicators(country_code = ctry_code)
+  return(df_processed)  
+}
+
+```
+
+
+```{r, echo=FALSE}
+
+df_som_data <- load_h2r_indicators(ctry_code = "som")
+
+df_som_data_shape <- som_hex |> 
+  left_join(df_som_data, by = c("GRID_ID" = "hex_4000km"))
+
+
+df_water_points_shape <- load_swp() |> 
+  st_as_sf(coords = c("longitude","latitude"), crs = 4326)
+
+
+# I want to clip the point file to just H2R areas 
+h2r_bbox <- som_hex |> 
+  filter(GRID_ID %in% df_som_data$hex_4000km) |> 
+  st_bbox() |> 
+  st_as_sfc()
+
+swp_in_h2r_bbox<-df_water_points_shape[h2r_bbox,]
+swp_in_h2r_bbox_functional <- swp_in_h2r_bbox |> 
+  mutate(
+    functioning= tolower(functioning)
+  ) |> 
+  filter(functioning=="yes")
+
+df_som_data_polygons <- sf::st_cast(x = df_som_data_shape,to = 'POLYGON')[h2r_bbox,]
+
+df_h2r_select_cols <- df_som_data |> 
+  select("hex_4000km", "gettingwater_time_30_to_1", "mainsource_water_well_unprotected")
+
+num_functioning_points <- swp_in_h2r_bbox_functional |> 
+  sf::st_join(som_hex) |> 
+  sf::st_drop_geometry() |> 
+  group_by(GRID_ID) |> 
+  summarise(num_functioning_points = n())
+
+num_functioning_borehole <- swp_in_h2r_bbox_functional |> 
+  sf::st_join(som_hex) |> 
+  sf::st_drop_geometry() |> 
+  filter(water_source_type == "Borehole") |> 
+  group_by(GRID_ID) |> 
+  summarise(num_functioning_borehole = n())
+
+num_strategic_borehole <- swp_in_h2r_bbox_functional |> 
+  sf::st_join(som_hex) |> 
+  sf::st_drop_geometry() |> 
+  filter(water_source_type == "Borehole", is_strategic == "yes") |> 
+  group_by(GRID_ID) |> 
+  summarise(num_strategic_borehole = n())
+
+num_functioning_dug_well <- swp_in_h2r_bbox_functional |> 
+  sf::st_join(som_hex) |> 
+  sf::st_drop_geometry() |> 
+  filter(water_source_type == "Dug Well") |> 
+  group_by(GRID_ID) |> 
+  summarise(num_functioning_dug_well = n())
+
+num_strategic_dug_well <- swp_in_h2r_bbox_functional |> 
+  sf::st_join(som_hex) |> 
+  sf::st_drop_geometry() |> 
+  filter(water_source_type == "Dug Well", is_strategic == "yes") |> 
+  group_by(GRID_ID) |> 
+  summarise(num_strategic_dug_well = n())
+
+df_swp_cols <- num_functioning_points |> 
+  full_join(num_functioning_borehole) |> 
+  full_join(num_strategic_borehole) |> 
+  full_join(num_functioning_dug_well) |> 
+  full_join(num_strategic_dug_well) |> 
+  rename(hex_4000km = GRID_ID)
+
+df_combined_h2r_swp <- df_h2r_select_cols |> 
+  full_join(df_swp_cols)
+
+```
+
+### num_functioning_points and mainsource_water_well_unprotected
+
+```{r, echo=FALSE}
+
+ggplot(data = df_combined_h2r_swp |> filter(num_functioning_points < 30) , aes(x = num_functioning_points, y = mainsource_water_well_unprotected)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  ggpubr::stat_cor(method = "pearson", label.x = 0, label.y = 1)
+```
+
+### num_functioning_points and gettingwater_time_30_to_1
+
+```{r, echo=FALSE}
+ggplot(data = df_combined_h2r_swp |> filter(num_functioning_points < 30) , aes(x = num_functioning_points, y = gettingwater_time_30_to_1)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  ggpubr::stat_cor(method = "pearson", label.x = 0, label.y = 1)
+```
+
+### num_functioning_borehole and gettingwater_time_30_to_1
+
+```{r, echo=FALSE}
+ggplot(data = df_combined_h2r_swp |> filter(num_functioning_borehole < 30) , aes(x = num_functioning_borehole, y = gettingwater_time_30_to_1)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  ggpubr::stat_cor(method = "pearson", label.x = 0, label.y = 1)
+```
+
+### num_strategic_borehole and gettingwater_time_30_to_1
+
+```{r, echo=FALSE}
+ggplot(data = df_combined_h2r_swp |> filter(num_strategic_borehole < 20) , aes(x = num_strategic_borehole, y = gettingwater_time_30_to_1)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  ggpubr::stat_cor(method = "pearson", label.x = 0, label.y = 1)
+```
+
+### num_functioning_dug_well and gettingwater_time_30_to_1
+
+```{r, echo=FALSE}
+ggplot(data = df_combined_h2r_swp , aes(x = num_functioning_dug_well, y = gettingwater_time_30_to_1)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  ggpubr::stat_cor(method = "pearson", label.x = 0, label.y = 1)
+```
+
+### num_strategic_dug_well and gettingwater_time_30_to_1
+
+```{r, echo=FALSE}
+ggplot(data = df_combined_h2r_swp |> filter(num_strategic_dug_well < 16), aes(x = num_strategic_dug_well, y = gettingwater_time_30_to_1))+
+  geom_point() +
+  geom_smooth(method=lm) +
+  ggpubr::stat_cor(method = "pearson", label.x = 0, label.y = 1)
+```
+
