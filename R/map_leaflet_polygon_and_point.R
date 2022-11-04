@@ -15,11 +15,16 @@ map_leaflet_polygon_and_point <- function(input_polygon_layer, polygon_lyr_colum
   # colouring the points
   dark_pal <-RColorBrewer::brewer.pal(n=6, name = "Dark2")
   points_facpal <- colorFactor(palette = dark_pal, domain = input_point_layer[[point_lyr_column]])
+  # center point of the layer
+  center_pt <- sf::st_centroid(x = input_polygon_layer |> sf::st_union()) |> sf::st_coordinates(.)
+  center_lat <- center_pt[, 2]
+  center_lon <- center_pt[, 1]
+
   # start leaflet
   leaflet() |>
     addProviderTiles(providers$Esri.WorldGrayCanvas, options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), group="Esri Gray Canvas") |>
     addProviderTiles(providers$Esri.WorldImagery,  options = providerTileOptions(minZoom = 3.75, maxZoom = 10.5), group="Esri World Imagery") |>
-    setView(lng = 43.825611, lat= 2.766313, zoom = 8) |>
+    setView(lng = center_lon, lat = center_lat, zoom = 8) |>
     addPolygons( data = input_polygon_layer,
                  color = "white", weight = 2, opacity = 1, dashArray = "3", fillOpacity = 0.8,
                  fillColor = ~pal(input_polygon_layer[[polygon_lyr_column]]),
