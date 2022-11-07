@@ -1,5 +1,9 @@
 #' load_h2r_data
 #' Provide the location of the main folder in our example we were reading from OneDrive, the the path to the csv file.
+#'
+#' @param main_folder_path
+#' @param data_path
+#'
 #' @return
 #' @export
 #' @description function to load H2R data set - will use environment key to specify base data directory
